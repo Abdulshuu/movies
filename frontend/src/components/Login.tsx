@@ -1,125 +1,82 @@
 import React from 'react'
-import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useState, useEffect } from 'react'
-
-
-
+import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 
 function Login() {
 
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const Navigate = useNavigate()
 
 
-    function submitLogin(e) {
 
-        e.preventDefault()
-        console.log(email)
-        console.log(password)
-        setEmail('')
-        setPassword('')
+    async function doAuth(cred: object) {
+
+
+        type cred = {
+            credential: string,
+            client_id: string,
+            select_by: string
+        }
+
+        console.log(cred)
+        try {
+
+            let res = await axios.post('http://localhost:3000/api/auth/login',
+                {
+                    token: cred.credential
+                },
+                {
+                    withCredentials: true
+                }
+            )
+
+            console.log(res)
+
+            if (res.status == 200 && res.data.msg == 'already user exists') {
+                Navigate('/')
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+
+
+
     }
 
 
 
 
+
+
+
+
+
+
     return (
-        <div className="min-h-screen flex justify-center items-center w-full bg-neutral-900 p-4">
-            <Card className="w-full max-w-sm bg-neutral-900/60 backdrop-blur-xl border border-neutral-700/50 shadow-2xl shadow-black/40">
-                <CardHeader>
-                    <CardTitle className="text-2xl font-semibold text-neutral-100">
-                        Login to your account
-                    </CardTitle>
-                    <CardDescription className="text-neutral-400">
-                        Enter your email below to login to your account
-                    </CardDescription>
-                    <CardAction>
-                        <Button variant="link" className="text-neutral-300 hover:text-white">
-                            Sign Up
-                        </Button>
-                    </CardAction>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={submitLogin}>
-                        <div className="flex flex-col gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-neutral-300">
-                                    Email
-                                </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="m@example.com"
-                                    required
-                                    className="bg-neutral-800/60 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 focus-visible:ring-neutral-400 focus-visible:border-neutral-500"
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value)
-                                    }}
+        <div className='flex items-center justify-center h-screen bg-neutral-950 relative overflow-hidden'>
 
+            {/* Ambient background glow */}
+            <div className='absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-red-600/10 rounded-full blur-3xl' />
 
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password" className="text-neutral-300">
-                                        Password
-                                    </Label>
+            <div className='relative w-full max-w-sm mx-4 p-8 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl'>
+                <p className='text-3xl font-bold text-white text-center mb-1'>Welcome back</p>
+                <p className='text-sm text-neutral-400 text-center mb-8'>Sign in to continue to your dashboard</p>
 
-                                    <a
-                                        href="#"
-                                        className="ml-auto inline-block text-sm text-neutral-400 underline-offset-4 hover:text-white hover:underline transition-colors"
-                                    >
-                                        Forgot your password?
-                                    </a>
-                                </div>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    required
-                                    className="bg-neutral-800/60 border-neutral-700 text-neutral-100 focus-visible:ring-neutral-400 focus-visible:border-neutral-500"
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value)
-                                    }}
+                <div className='flex justify-center'>
+                    <GoogleLogin
+                        onSuccess={doAuth}
+                        onError={() => {
+                            console.log('Login Failed');
+                        }}
+                    />
+                </div>
+            </div>
 
-                                />
-                            </div>
-                        </div>
-                    </form>
-                </CardContent>
-                <CardFooter className="flex-col bg-neutral-900 gap-2">
-                    <Button
-                        type="submit"
-                        className="w-full bg-white hover:cursor-pointer text-neutral-900 hover:bg-neutral-200 font-medium"
-                        onSubmit={submitLogin}
-                    >
-                        Login
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full bg-transparent hover:cursor-pointer border-neutral-700 text-neutral-200 hover:bg-neutral-800 hover:text-white"
-                    >
-                        Login with Google
-                    </Button>
-                </CardFooter>
-            </Card>
-        </div >
+        </div>
     )
 }
 
 export { Login }
-
