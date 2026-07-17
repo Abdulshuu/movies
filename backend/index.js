@@ -5,15 +5,22 @@ import dotenv from 'dotenv'
 import { MongoClient } from 'mongodb'
 import axios from 'axios'
 import { ObjectId } from 'mongodb'
-
+import { signup } from './controllers/auth-signup.js'
+import cookieParser from 'cookie-parser'
 dotenv.config()
 
 
 const app = express()
 
-app.use(cors())
+app.use(cors({
+    origin: 'http://localhost:5173', // exact frontend origin, not '*'
+    credentials: true,
+    sameSite: 'lax',      // works for localhost-to-localhost in most browsers
+    secure: false,
+}))
 
-
+app.use(express.json())
+app.use(cookieParser())
 
 
 
@@ -129,6 +136,36 @@ app.get('/get-movie', async (req, res) => {
 
 
 })
+
+app.get('/auth-status', (req, res) => {
+    let userToken = req.cookies.token
+
+    if (!userToken) {
+        return res.status(404).json({
+            msg: "token not found in the cookeis"
+        })
+    }
+    res.status(200).json({
+        msg: 'user found',
+        userToken
+    })
+})
+
+app.get('/api/remove-auth', (req, res) => {
+    let token = req.cookies.token
+    if (token) {
+        res.clearCookie('token')
+        console.log('done')
+        return res.status(200).json({
+            msg: 'user no longer exists'
+        })
+    }
+})
+
+
+app.post('/api/auth/login',
+    signup
+)
 
 
 app.listen(process.env.PORT, () => {
